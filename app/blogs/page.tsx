@@ -1,8 +1,9 @@
 'use client';
-
+import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { blogPosts } from '../data/blogs';
 import {
   FaSearch,
   FaChevronLeft,
@@ -11,149 +12,6 @@ import {
   FaClock,
   FaArrowRight,
 } from 'react-icons/fa';
-
-interface BlogPost {
-  id: number;
-  category: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  readTime: string;
-  image: string;
-}
-
-const blogPosts: BlogPost[] = [
-  {
-    id: 1,
-    category: 'Investment',
-    title: 'Real Estate Trends to Watch in 2026',
-    excerpt:
-      'Discover the emerging markets and technologies shaping the future of property investment...',
-    date: 'Jan 24, 2026',
-    readTime: '5 min',
-    image:
-      'https://images.unsplash.com/photo-1460472178825-e52506135b27?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 2,
-    category: 'Interior',
-    title: 'Minimalist Decor: Less is More',
-    excerpt:
-      'How to transform your apartment into a serene sanctuary using clean lines and neutral tones...',
-    date: 'Jan 22, 2026',
-    readTime: '4 min',
-    image:
-      'https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 3,
-    category: 'Legal',
-    title: 'Understanding Land Zoning Laws',
-    excerpt:
-      'A comprehensive guide for first-time land buyers on navigating complex zoning regulations...',
-    date: 'Jan 20, 2026',
-    readTime: '8 min',
-    image:
-      'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 4,
-    category: 'Lifestyle',
-    title: 'Top 10 Rooftop Gardens in NYC',
-    excerpt:
-      'Exploring the lush green escapes hidden atop Manhattan’s most exclusive luxury high-rises...',
-    date: 'Jan 18, 2026',
-    readTime: '6 min',
-    image:
-      'https://images.unsplash.com/photo-1506619216599-9d16d0903dfd?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 5,
-    category: 'Market',
-    title: 'Is Now the Time to Buy Land?',
-    excerpt:
-      'Analyzing the current economic shift and its impact on rural acreage prices across the USA...',
-    date: 'Jan 15, 2026',
-    readTime: '7 min',
-    image:
-      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 6,
-    category: 'Architecture',
-    title: 'Sustainable Modern Villas',
-    excerpt:
-      'How architects are integrating solar and smart tech into luxury home designs seamlessly...',
-    date: 'Jan 12, 2026',
-    readTime: '10 min',
-    image:
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 7,
-    category: 'Tips',
-    title: 'Staging Your Home for a Fast Sale',
-    excerpt:
-      'Proven techniques from pro stagers to make your house irresistible to potential buyers...',
-    date: 'Jan 10, 2026',
-    readTime: '5 min',
-    image:
-      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 8,
-    category: 'Apartment',
-    title: 'Small Space Living Hacks',
-    excerpt:
-      'Maximize every square foot of your urban apartment with these creative furniture solutions...',
-    date: 'Jan 08, 2026',
-    readTime: '4 min',
-    image:
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 9,
-    category: 'Investment',
-    title: 'Flipping Houses in the Digital Age',
-    excerpt:
-      'Using AI and data analytics to find the perfect fix-and-flip properties in competitive markets...',
-    date: 'Jan 05, 2026',
-    readTime: '9 min',
-    image:
-      'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 10,
-    category: 'Lifestyle',
-    title: 'Why Montana is the New Malibu',
-    excerpt:
-      'The massive migration of luxury buyers to the mountains of Big Sky Country explained...',
-    date: 'Jan 02, 2026',
-    readTime: '6 min',
-    image:
-      'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 11,
-    category: 'Market',
-    title: 'Interest Rates Update',
-    excerpt: 'What the latest Fed announcement means for your next mortgage or land loan...',
-    date: 'Dec 28, 2025',
-    readTime: '3 min',
-    image:
-      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000',
-  },
-  {
-    id: 12,
-    category: 'Interior',
-    title: 'Color of the Year 2026',
-    excerpt: 'Introducing "Midnight Sage"—how to use this calming hue in your master bedroom...',
-    date: 'Dec 25, 2025',
-    readTime: '4 min',
-    image:
-      'https://images.unsplash.com/photo-1616489953149-808620242270?auto=format&fit=crop&q=80&w=1000',
-  },
-];
 
 export default function BlogPage() {
   const [search, setSearch] = useState('');
@@ -253,9 +111,12 @@ export default function BlogPage() {
                     {post.excerpt}
                   </p>
 
-                  <div className="mt-auto pt-6 border-t border-zinc-100 flex items-center gap-2 text-blue-900 font-black text-xs uppercase tracking-widest group-hover:gap-4 transition-all">
+                  <Link
+                    href={`/blogs/${post.id}`}
+                    className="mt-auto pt-6 border-t border-zinc-100 flex items-center gap-2 text-blue-900 font-black text-xs uppercase tracking-widest group-hover:gap-4 transition-all cursor-pointer hover:text-[#FFB800]"
+                  >
                     Read Full Analysis <FaArrowRight className="text-[#FFB800]" />
-                  </div>
+                  </Link>
                 </div>
               </article>
             ))}
