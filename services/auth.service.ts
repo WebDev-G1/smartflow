@@ -2,7 +2,7 @@
 
 import { userRepository } from '@/repositories/user.repository';
 import bcrypt from 'bcryptjs';
-import { encryptSSN } from '@/util/encrypt';
+// Removed: import { encryptSSN } from '@/util/encrypt';
 import type { userRegister } from '@/app/auth/signup/page';
 
 export async function registerUser(data: userRegister) {
@@ -11,13 +11,12 @@ export async function registerUser(data: userRegister) {
     email,
     phone,
     homeAddress,
-    ssn,
     role,
     password,
     confirmPassword,
   } = data;
 
-  //  Business rules
+
   if (password !== confirmPassword) {
     throw new Error('Passwords do not match');
   }
@@ -31,21 +30,20 @@ export async function registerUser(data: userRegister) {
     throw new Error('Email already registered');
   }
 
-  //  Security
+  // 2. Security
   const hashedPassword = await bcrypt.hash(password, 10);
-  const encryptedSSN = encryptSSN(ssn);
 
+  // 3. (Ensure ssn is removed from your Repository Schema too!)
   const user = await userRepository.create({
     name,
     email,
     phone,
     homeAddress,
-    ssn: encryptedSSN,
     role,
     password: hashedPassword,
   });
 
-  //  RETURN A SAFE DTO (NOT DB OBJECT)
+  // 4. Return safe DTO
   return {
     id: user._id.toString(),
     name: user.name,
