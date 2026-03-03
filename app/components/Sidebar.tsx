@@ -34,9 +34,7 @@ const ICON_MAP: Record<string, { label: string; icon: JSX.Element }> = {
   'dashboard/manager/payments': { label: 'Payments', icon: <FaHandHoldingUsd /> },
   'dashboard/manager/settings': { label: 'Manager Settings', icon: <FaCogs /> },
   'dashboard/manager/customers': { label: 'Customers', icon: <FaUserCircle /> },
-  'dashboard/vendor': { label: 'Vendor Dashboard', icon: <FaTools /> },
-  'dashboard/vendor/jobs': { label: 'Jobs', icon: <FaClipboardList /> },
-  'dashboard/vendor/work-orders': { label: 'Work Orders', icon: <FaTools /> },
+
   'dashboard/vendor/settings': { label: 'Vendor Settings', icon: <FaSlidersH /> },
 };
 

@@ -1,197 +1,147 @@
 'use client';
+
 import RoleGuard from '../../components/RoleGuard';
 import { useState, useMemo } from 'react';
-import { FaTrash, FaEdit, FaEye, FaPlus, FaFileCsv, FaFilePdf } from 'react-icons/fa';
-import { CSVLink } from 'react-csv';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { FaTrash, FaEdit, FaEye, FaPlus } from 'react-icons/fa';
 
-// Vendor Type
 type Vendor = {
   id: string;
   name: string;
+  email: string;
   service: string;
+  agreement?: string;
   status: 'Active' | 'Inactive';
 };
 
-// Initial dummy data
 const initialVendors: Vendor[] = [
-  { id: 'v1', name: 'CleanPro', service: 'Cleaning', status: 'Active' },
-  { id: 'v2', name: 'FixItNow', service: 'Repairs', status: 'Active' },
-  { id: 'v3', name: 'SafeGuard', service: 'Security', status: 'Inactive' },
-  { id: 'v4', name: 'SparkTech', service: 'Maintenance', status: 'Active' },
+  {
+    id: 'v1',
+    name: 'CleanPro',
+    email: 'cleanpro@gmail.com',
+    service: 'Cleaning',
+    agreement: 'cleanpro.pdf',
+    status: 'Active',
+  },
+  {
+    id: 'v2',
+    name: 'FixItNow',
+    email: 'fixit@gmail.com',
+    service: 'Repairs',
+    agreement: 'fixit.pdf',
+    status: 'Active',
+  },
 ];
 
 export default function VendorsDashboard() {
   const [vendors, setVendors] = useState<Vendor[]>(initialVendors);
   const [search, setSearch] = useState('');
-  const [filterService, setFilterService] = useState('All');
-  const [modal, setModal] = useState<{ type: 'add' | 'edit' | 'view'; vendor?: Vendor } | null>(
-    null
-  );
-  const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 5;
+  const [modal, setModal] = useState<any>(null);
 
-  // Filtered & searched vendors
-  const filteredVendors = useMemo(() => {
-    return vendors
-      .filter((v) => (filterService === 'All' ? true : v.service === filterService))
-      .filter((v) => v.name.toLowerCase().includes(search.toLowerCase()));
-  }, [vendors, search, filterService]);
-
-  // Pagination
-  const paginatedVendors = useMemo(() => {
-    const start = (currentPage - 1) * perPage;
-    return filteredVendors.slice(start, start + perPage);
-  }, [filteredVendors, currentPage]);
-
-  // Stats
-  const totalVendors = vendors.length;
-  const activeVendors = vendors.filter((v) => v.status === 'Active').length;
-  const inactiveVendors = vendors.filter((v) => v.status === 'Inactive').length;
-
-  // Handlers
-  const toggleStatus = (id: string) => {
-    setVendors(
-      vendors.map((v) =>
-        v.id === id ? { ...v, status: v.status === 'Active' ? 'Inactive' : 'Active' } : v
-      )
+  const filtered = useMemo(() => {
+    return vendors.filter(
+      (v) =>
+        v.name.toLowerCase().includes(search.toLowerCase()) ||
+        v.email.toLowerCase().includes(search.toLowerCase())
     );
-  };
-
-  const deleteVendor = (id: string) => {
-    if (confirm('Are you sure you want to delete this vendor?')) {
-      setVendors(vendors.filter((v) => v.id !== id));
-    }
-  };
+  }, [vendors, search]);
 
   const saveVendor = (vendor: Vendor) => {
     if (modal?.type === 'add') {
       setVendors([...vendors, vendor]);
-    } else if (modal?.type === 'edit') {
+    } else {
       setVendors(vendors.map((v) => (v.id === vendor.id ? vendor : v)));
     }
     setModal(null);
   };
 
-  const exportPDF = () => {
-    const doc = new jsPDF();
-    doc.text('Vendor List', 14, 16);
-    const tableData = vendors.map((v) => [v.name, v.service, v.status]);
-    (doc as any).autoTable({
-      head: [['Name', 'Service', 'Status']],
-      body: tableData,
-      startY: 20,
-    });
-    doc.save('vendors.pdf');
+  const deleteVendor = (id: string) => {
+    if (confirm('Delete vendor?')) {
+      setVendors(vendors.filter((v) => v.id !== id));
+    }
   };
 
   return (
-    <RoleGuard allow={['MANAGER', 'ADMIN']}>
-      <div className="p-8 space-y-6 font-inter bg-neutral-50 min-h-full">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <h1 className="text-3xl font-semibold text-neutral-900 tracking-tight">
-            Vendor <span className="text-blue-600">Dashboard</span>
-          </h1>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setModal({ type: 'add' })}
-              className="flex items-center gap-2 bg-blue-600 px-4 py-2 text-white rounded hover:bg-blue-500"
-            >
-              <FaPlus /> Add Vendor
-            </button>
-            <CSVLink
-              data={vendors}
-              filename="vendors.csv"
-              className="bg-green-600 px-4 py-2 text-white rounded hover:bg-green-500 flex items-center gap-2"
-            >
-              <FaFileCsv /> CSV
-            </CSVLink>
-            <button
-              onClick={exportPDF}
-              className="bg-red-600 px-4 py-2 text-white rounded hover:bg-red-500 flex items-center gap-2"
-            >
-              <FaFilePdf /> PDF
-            </button>
+    <RoleGuard allow={['ADMIN', 'MANAGER']}>
+      <div className="p-8 bg-slate-50 min-h-screen space-y-6">
+        {/* HEADER */}
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-800">Vendors</h1>
+            <p className="text-sm text-slate-500">Manage vendor agreements and details</p>
           </div>
-        </header>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard label="Total Vendors" value={totalVendors} color="blue" />
-          <StatCard label="Active Vendors" value={activeVendors} color="green" />
-          <StatCard label="Inactive Vendors" value={inactiveVendors} color="red" />
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row justify-between gap-4 items-center">
-          <input
-            type="text"
-            placeholder="Search Vendor..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded px-4 py-2 w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <select
-            value={filterService}
-            onChange={(e) => setFilterService(e.target.value)}
-            className="border rounded px-4 py-2 w-full md:w-1/4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <button
+            onClick={() => setModal({ type: 'add' })}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition"
           >
-            <option>All</option>
-            <option>Cleaning</option>
-            <option>Repairs</option>
-            <option>Maintenance</option>
-            <option>Security</option>
-          </select>
+            <FaPlus /> Add Vendor
+          </button>
         </div>
 
-        {/* Vendor Table */}
-        <div className="overflow-x-auto rounded border bg-white shadow-sm">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-100">
+        {/* SEARCH */}
+        <input
+          placeholder="Search vendor..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-sm px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+        />
+
+        {/* TABLE */}
+        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-100 text-slate-600">
               <tr>
-                <th className="px-4 py-2 text-left">Name</th>
-                <th className="px-4 py-2 text-left">Service</th>
-                <th className="px-4 py-2 text-left">Status</th>
-                <th className="px-4 py-2 text-center">Actions</th>
+                <th className="px-6 py-3 text-left">Vendor</th>
+                <th className="px-6 py-3 text-left">Email</th>
+                <th className="px-6 py-3 text-left">Service</th>
+                <th className="px-6 py-3 text-left">Agreement</th>
+                <th className="px-6 py-3 text-center">Status</th>
+                <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
+
             <tbody>
-              {paginatedVendors.map((v) => (
-                <tr key={v.id} className="border-t hover:bg-neutral-50">
-                  <td className="px-4 py-2">{v.name}</td>
-                  <td className="px-4 py-2">{v.service}</td>
-                  <td className="px-4 py-2">
-                    <button
-                      onClick={() => toggleStatus(v.id)}
-                      className={`px-2 py-1 rounded text-white ${
+              {filtered.map((v) => (
+                <tr key={v.id} className="border-t hover:bg-slate-50 transition">
+                  <td className="px-6 py-4 font-medium text-slate-800">{v.name}</td>
+
+                  <td className="px-6 py-4 text-slate-600 text-sm">{v.email}</td>
+
+                  <td className="px-6 py-4 text-slate-600 text-sm">{v.service}</td>
+
+                  <td className="px-6 py-4 text-blue-600 text-xs underline cursor-pointer">
+                    {v.agreement || 'No file'}
+                  </td>
+
+                  <td className="px-6 py-4 text-center">
+                    <span
+                      className={`px-3 py-1 text-xs rounded-full ${
                         v.status === 'Active'
-                          ? 'bg-green-600 hover:bg-green-500'
-                          : 'bg-red-600 hover:bg-red-500'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-rose-100 text-rose-700'
                       }`}
                     >
                       {v.status}
-                    </button>
+                    </span>
                   </td>
-                  <td className="px-4 py-2 text-center flex justify-center gap-2">
+
+                  <td className="px-6 py-4 text-right space-x-4">
                     <button
                       onClick={() => setModal({ type: 'view', vendor: v })}
-                      className="text-blue-600 hover:underline flex items-center gap-1"
+                      className="text-slate-600 hover:text-blue-600"
                     >
-                      <FaEye /> View
+                      <FaEye />
                     </button>
+
                     <button
                       onClick={() => setModal({ type: 'edit', vendor: v })}
-                      className="text-amber-600 hover:underline flex items-center gap-1"
+                      className="text-blue-600"
                     >
-                      <FaEdit /> Edit
+                      <FaEdit />
                     </button>
-                    <button
-                      onClick={() => deleteVendor(v.id)}
-                      className="text-red-600 hover:underline flex items-center gap-1"
-                    >
-                      <FaTrash /> Delete
+
+                    <button onClick={() => deleteVendor(v.id)} className="text-red-600">
+                      <FaTrash />
                     </button>
                   </td>
                 </tr>
@@ -200,22 +150,6 @@ export default function VendorsDashboard() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex justify-end gap-2 mt-2">
-          {Array.from({ length: Math.ceil(filteredVendors.length / perPage) }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded ${
-                currentPage === i + 1 ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-
-        {/* Modal */}
         {modal && (
           <VendorModal
             type={modal.type}
@@ -229,98 +163,99 @@ export default function VendorsDashboard() {
   );
 }
 
-// StatCard Component
-function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
-  const colorMap: any = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    red: 'bg-red-50 text-red-600',
-  };
-  return (
-    <div
-      className={`p-6 rounded-xl border border-neutral-200 ${colorMap[color]} font-medium shadow-sm`}
-    >
-      <p className="text-xs">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-    </div>
-  );
-}
+//////////////////////////////////////////////////////
+// MODAL SIMPLE MODERN STYLE
+//////////////////////////////////////////////////////
 
-// Vendor Modal Component
 function VendorModal({ type, vendor, onClose, onSave }: any) {
   const [name, setName] = useState(vendor?.name || '');
+  const [email, setEmail] = useState(vendor?.email || '');
   const [service, setService] = useState(vendor?.service || 'Cleaning');
   const [status, setStatus] = useState(vendor?.status || 'Active');
+  const [agreement, setAgreement] = useState(vendor?.agreement || '');
+
+  const isView = type === 'view';
 
   const handleSubmit = () => {
     const id = vendor?.id || `v${Date.now()}`;
-    onSave({ id, name, service, status });
+
+    onSave({
+      id,
+      name,
+      email,
+      service,
+      status,
+      agreement,
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl w-full max-w-md space-y-4">
-        <h2 className="text-lg font-semibold">
-          {type === 'add' && 'Add Vendor'}
-          {type === 'edit' && 'Edit Vendor'}
-          {type === 'view' && 'Vendor Details'}
-        </h2>
+    <div className="fixed inset-0 bg-black/40 flex justify-center items-center p-4 z-50">
+      <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6 space-y-5">
+        <h2 className="text-lg font-semibold capitalize">{type} Vendor</h2>
 
-        {type !== 'view' ? (
-          <>
-            <div>
-              <label className="block text-sm font-medium">Name</label>
+        <div className="space-y-4 text-sm">
+          {isView ? (
+            <>
+              <p>Name : {name}</p>
+              <p>Email : {email}</p>
+              <p>Service : {service}</p>
+              <p>Agreement : {agreement || 'No file'}</p>
+              <p>Status : {status}</p>
+            </>
+          ) : (
+            <>
               <input
-                type="text"
+                placeholder="Vendor Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full border rounded px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border rounded-lg"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Service</label>
+
+              <input
+                placeholder="Vendor Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+
               <select
                 value={service}
                 onChange={(e) => setService(e.target.value)}
-                className="mt-1 w-full border rounded px-4 py-2 focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border rounded-lg"
               >
                 <option>Cleaning</option>
                 <option>Repairs</option>
                 <option>Maintenance</option>
                 <option>Security</option>
               </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={status === 'Active'}
-                onChange={() => setStatus(status === 'Active' ? 'Inactive' : 'Active')}
-              />
-              <span>Status Active</span>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-2">
-            <p>
-              <strong>Name:</strong> {name}
-            </p>
-            <p>
-              <strong>Service:</strong> {service}
-            </p>
-            <p>
-              <strong>Status:</strong> {status}
-            </p>
-          </div>
-        )}
 
-        <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onClose} className="px-4 py-2 rounded border hover:bg-gray-100">
+              <input
+                type="file"
+                onChange={(e: any) => setAgreement(e.target.files?.[0]?.name || '')}
+              />
+
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option>Active</option>
+                <option>Inactive</option>
+              </select>
+            </>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4">
+          <button onClick={onClose} className="px-4 py-2 border rounded-lg text-sm">
             Close
           </button>
-          {type !== 'view' && (
+
+          {!isView && (
             <button
               onClick={handleSubmit}
-              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-500"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
             >
               Save
             </button>

@@ -68,76 +68,98 @@ export default function CustomersPage() {
   const totalPages = Math.ceil(filtered.length / pageSize);
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+
   return (
-    <div className="p-8 min-h-full bg-slate-50 space-y-6 font-inter">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Customers</h1>
-        <p className="text-sm text-slate-500">View, update and manage customer information</p>
+    <div className="p-8 min-h-full bg-gradient-to-br from-slate-50 to-slate-100 space-y-8">
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">Customers</h1>
+          <p className="text-slate-500 text-sm">Manage your registered customers</p>
+        </div>
+
+        <div className="w-72">
+          <input
+            className="w-full px-4 py-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm"
+            placeholder="Search by name, email or location..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
       </div>
 
-      {/* Search */}
-      <div className="max-w-sm">
-        <input
-          className="w-full px-4 py-2 border rounded-lg text-sm"
-          placeholder="Search customers..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
-      </div>
-
-      {/* Table */}
-      <div className="bg-white border rounded-lg overflow-hidden">
+      {/* TABLE CARD */}
+      <div className="bg-white  shadow-lg border border-slate-200 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-slate-600">
+          <thead className="bg-slate-100 text-slate-600 uppercase text-xs tracking-wide">
             <tr>
-              <th className="px-5 py-3 text-left">ID</th>
-              <th className="px-5 py-3 text-left">Customer</th>
-              <th className="px-5 py-3 text-left">Phone</th>
-              <th className="px-5 py-3 text-left">Location</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3 text-right">Actions</th>
+              <th className="px-6 py-4 text-left">Customer</th>
+              <th className="px-6 py-4 text-left">Phone</th>
+              <th className="px-6 py-4 text-left"> Home Address</th>
+              <th className="px-6 py-4 text-center">Status</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {paginated.map((c) => (
-              <tr key={c.id} className="border-t hover:bg-slate-50">
-                <td className="px-5 py-3 font-mono text-xs text-slate-500">{c.id}</td>
+            {paginated.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-slate-400">
+                  No customers found
+                </td>
+              </tr>
+            )}
 
-                <td className="px-5 py-3">
-                  <div className="font-medium">{c.name}</div>
-                  <div className="text-xs text-slate-500">{c.email}</div>
+            {paginated.map((c) => (
+              <tr key={c.id} className="border-t hover:bg-slate-50 transition">
+                <td className="px-6 py-4 flex items-center gap-4">
+                  {/* Avatar */}
+                  <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm shadow">
+                    {getInitials(c.name)}
+                  </div>
+
+                  <div>
+                    <div className="font-semibold text-slate-800">{c.name}</div>
+                    <div className="text-xs text-slate-500">{c.email}</div>
+                  </div>
                 </td>
 
-                <td className="px-5 py-3">{c.phone}</td>
-                <td className="px-5 py-3">{c.location}</td>
+                <td className="px-6 py-4 text-slate-600">
+                  {`+1 ${c.phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')}`}
+                </td>
+                <td className="px-6 py-4 text-slate-600">{c.location}</td>
 
-                <td className="px-5 py-3 text-center">
+                <td className="px-6 py-4 text-center">
                   <span
-                    className={`px-3 py-1 border rounded-lg text-xs ${
+                    className={`px-4 py-1.5 rounded-full text-xs font-medium ${
                       c.status === 'Active'
-                        ? 'border-emerald-300 text-emerald-700'
-                        : 'border-rose-300 text-rose-700'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-rose-100 text-rose-600'
                     }`}
                   >
                     {c.status}
                   </span>
                 </td>
 
-                <td className="px-5 py-3 text-right space-x-2">
+                <td className="px-6 py-4 text-right space-x-2">
                   <button
                     onClick={() => setEditingCustomer(c)}
-                    className="px-4 py-2 border rounded-lg text-sm hover:bg-blue-600 hover:text-white"
+                    className="px-4 py-2 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 transition shadow"
                   >
-                    Update
+                    Edit
                   </button>
                   <button
                     onClick={() => deleteCustomer(c.id)}
-                    className="px-4 py-2 border rounded-lg text-sm hover:bg-red-600 hover:text-white"
+                    className="px-4 py-2 text-xs rounded-md bg-rose-600 text-white hover:bg-rose-700 transition shadow"
                   >
                     Delete
                   </button>
@@ -148,77 +170,135 @@ export default function CustomersPage() {
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* PAGINATION */}
       <div className="flex justify-between items-center">
-        <span className="text-sm text-slate-600">
-          Page {page} of {totalPages}
+        <span className="text-sm text-slate-500">
+          Page {page} of {totalPages || 1}
         </span>
 
-        <div className="space-x-2">
+        <div className="flex gap-2">
           <button
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
-            className="px-4 py-2 border rounded-lg text-sm disabled:opacity-40"
+            className="px-4 py-2 rounded-lg border bg-white shadow-sm text-sm disabled:opacity-40 hover:bg-slate-100"
           >
             Previous
           </button>
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
-            className="px-4 py-2 border rounded-lg text-sm disabled:opacity-40"
+            className="px-4 py-2 rounded-lg border bg-white shadow-sm text-sm disabled:opacity-40 hover:bg-slate-100"
           >
             Next
           </button>
         </div>
       </div>
 
-      {/* Update Modal */}
+      {/* SIMPLE MODERN MODAL */}
       {editingCustomer && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white border rounded-lg w-full max-w-md p-6 space-y-4">
-            <h2 className="text-lg font-semibold">Update Customer</h2>
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          onClick={() => setEditingCustomer(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-white  shadow-lg p-6 space-y-6"
+          >
+            {/* Header */}
+            <div>
+              <h2 className="text-lg font-semibold text-slate-800">Edit Customer</h2>
+              <p className="text-sm text-slate-500">Update customer details</p>
+            </div>
 
-            {(['name', 'email', 'phone', 'location'] as const).map((field) => (
+            {/* Form */}
+            <div className="space-y-4">
               <input
-                key={field}
-                className="w-full px-4 py-2 border rounded-lg text-sm"
-                placeholder={field}
-                value={editingCustomer[field]}
+                type="text"
+                placeholder="Full Name"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                value={editingCustomer.name}
                 onChange={(e) =>
                   setEditingCustomer({
                     ...editingCustomer,
-                    [field]: e.target.value,
+                    name: e.target.value,
                   })
                 }
               />
-            ))}
 
-            <select
-              className="w-full px-4 py-2 border rounded-lg text-sm"
-              value={editingCustomer.status}
-              onChange={(e) =>
-                setEditingCustomer({
-                  ...editingCustomer,
-                  status: e.target.value as 'Active' | 'Inactive',
-                })
-              }
-            >
-              <option>Active</option>
-              <option>Inactive</option>
-            </select>
+              <input
+                type="email"
+                placeholder="Email Address"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                value={editingCustomer.email}
+                onChange={(e) =>
+                  setEditingCustomer({
+                    ...editingCustomer,
+                    email: e.target.value,
+                  })
+                }
+              />
 
-            <div className="flex justify-end gap-3 pt-2">
+              <div className="flex">
+                <span className="flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-100 text-sm text-slate-600">
+                  +1
+                </span>
+                <input
+                  type="tel"
+                  maxLength={10}
+                  placeholder="Phone Number"
+                  className="w-full px-4 py-2.5 rounded-r-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  value={editingCustomer.phone}
+                  onChange={(e) =>
+                    setEditingCustomer({
+                      ...editingCustomer,
+                      phone: e.target.value.replace(/\D/g, ''),
+                    })
+                  }
+                />
+              </div>
+
+              <input
+                type="text"
+                placeholder="Location"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                value={editingCustomer.location}
+                onChange={(e) =>
+                  setEditingCustomer({
+                    ...editingCustomer,
+                    location: e.target.value,
+                  })
+                }
+              />
+
+              <select
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                value={editingCustomer.status}
+                onChange={(e) =>
+                  setEditingCustomer({
+                    ...editingCustomer,
+                    status: e.target.value as 'Active' | 'Inactive',
+                  })
+                }
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3">
               <button
                 onClick={() => setEditingCustomer(null)}
-                className="px-4 py-2 border rounded-lg text-sm"
+                className="px-4 py-2 text-sm  border border-slate-300 hover:bg-slate-100 transition"
               >
                 Cancel
               </button>
+
               <button
                 onClick={saveUpdate}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700"
+                className="px-4 py-2 text-sm  bg-blue-600 text-white hover:bg-blue-700 transition"
               >
-                Save Changes
+                Save
               </button>
             </div>
           </div>
